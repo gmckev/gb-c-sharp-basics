@@ -1,5 +1,4 @@
 .vs
-gb_c-sharp-basics.sln
 Task_1/App.config
 Task_1/Properties
 Task_1/bin
@@ -25,4 +24,9 @@ Task_5/Properties
 Task_5/bin
 Task_5/Task_5.csproj
 Task_5/obj
+gb_c-sharp-basics/App.config
+gb_c-sharp-basics/Properties
+gb_c-sharp-basics/bin
+gb_c-sharp-basics/gb_c-sharp-basics.csproj
+gb_c-sharp-basics/obj
 
