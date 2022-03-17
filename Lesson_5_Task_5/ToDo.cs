@@ -7,31 +7,53 @@
 при вводе пользователем порядкового номера задачи отметить задачу с этим порядковым номером как выполненную;
 записать актуальный массив задач в файл tasks.json/xml/bin.*/
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
-bool continueJob = true;
-var fileName = "ToDo.json";
+bool showMenu = true;
+var saveFileName = "todo.json";
 
-while (continueJob)
+ToDo[] toDoArray = new ToDo[0];
+
+while (showMenu)
 {
     Console.WriteLine("Please choose an option: ");
     DisplayMenu();
 
-    string userCodeChoice = Console.ReadLine();
-    int intUserCodeChoice = int.Parse(userCodeChoice);
+    string userInput = Console.ReadLine();
+    int intUserInputCode = int.Parse(userInput);
 
-    switch (intUserCodeChoice)
+    switch (intUserInputCode)
     {
         case 1:
             EnterTask();
             break;
         case 2:
-            CloseTask();
+            CloseTask(DeserializeArray());
             break;
-        case 3: continueJob = false;
+        case 3:
+            DisplayResult();
             break;
-        default: Console.WriteLine("Wrong choice! Choose between 1 and 3");
+        case 0: showMenu = false;
             break;
+        default:
+            Console.WriteLine("Wrong choice! Choose between 1 and 3");
+            break;
+    }
+}
+
+void DisplayResult()
+{
+    foreach(ToDo toDo in toDoArray)
+    {
+        if(toDo.IsDone == true)
+        {
+         Console.WriteLine($"[X] Index: {toDo.Index}\n[X] Title: {toDo.Title}\n[X] Done: {toDo.IsDone}");
+
+        }
+        else
+        {
+         Console.WriteLine($"Index: {toDo.Index}\nTitle: {toDo.Title}\nDone: {toDo.IsDone}");
+        }
     }
 }
 
@@ -39,26 +61,58 @@ void EnterTask()
 {
     Console.WriteLine("Enter task name:");
     string taskName = Console.ReadLine();
-    var newTask = new ToDo(taskName);
-    var json = JsonConvert.SerializeObject(newTask);
-    File.AppendAllText(fileName, json);
-    File.AppendAllText(fileName, ",");
+    var taskObj = new ToDo(taskName);
+    toDoArray = AddItemToArray(toDoArray, taskObj);
+    SerializeArray(toDoArray);
 }
 
-void CloseTask()
+ToDo[] DeserializeArray()
+{
+    var file = File.ReadAllText(saveFileName);
+    var deserializedToDoArray = JsonSerializer.Deserialize<ToDo[]>(file);
+    return deserializedToDoArray;
+}
+
+void SerializeArray(ToDo[] toDoArray)
+{
+    string json = JsonSerializer.Serialize(toDoArray);
+    File.WriteAllText(saveFileName, json);
+}
+
+ToDo[] AddItemToArray(ToDo[] toDoArray, ToDo newTask)
+{
+    ToDo[] tempArray = new ToDo[toDoArray.Length+1];
+    toDoArray.CopyTo(tempArray, 0);
+    tempArray[toDoArray.Length] = newTask;
+    return tempArray;
+}
+
+void CloseTask(ToDo[] desirializedArray)
 {
     Console.WriteLine("Enter task id you want to close");
-    string json = File.ReadAllText(fileName);
-    ToDo obj = JsonConvert.DeserializeObject<ToDo>(json); // падает ошибка в этом месте
-    Console.Write(obj);
+    int input = int.Parse(Console.ReadLine());
+    foreach(ToDo toDo in desirializedArray)
+    {
+        if(toDo.Index == input)
+        {
+            foreach(ToDo todo in toDoArray)
+            {
+                if(todo.Index == input)
+                {
+                    todo.IsDone = true;
+                }
+            }
+        }
+    }
 }
-
 void DisplayMenu()
 {
+    Console.WriteLine("Enter 0 to exit");
     Console.WriteLine("Enter 1 to add task");
     Console.WriteLine("Enter 2 to close task");
-    Console.WriteLine("Enter 3 to exit");
+    Console.WriteLine("Enter 3 to display result");
 }
+
 public class ToDo
 {
     private string _title;
@@ -68,7 +122,8 @@ public class ToDo
 
     public ToDo()
     {
-
+        _title = "unknown";
+        _isDone = false;
     }
     public ToDo(string title)
     {
