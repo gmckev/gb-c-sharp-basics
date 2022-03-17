@@ -104,6 +104,7 @@ void CloseTask(ToDo[] desirializedArray)
             }
         }
     }
+    SerializeArray(toDoArray);
 }
 void DisplayMenu()
 {
